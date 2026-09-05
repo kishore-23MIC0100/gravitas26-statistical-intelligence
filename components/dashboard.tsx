@@ -152,38 +152,91 @@ export default function Dashboard() {
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [masterSheetUrl, setMasterSheetUrl] = useState("");
+  const [tempUrl, setTempUrl] = useState("");
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string>("");
 
-
-
-  const loadSampleData = () => {
+  const loadMasterData = (targetUrl?: string) => {
+    setIsSyncing(true);
     setUploadError("");
-    fetch("/gravitas26-sample-testing-data.csv")
-      .then((res) => res.text())
-      .then((text) => {
+    const urlToFetch = targetUrl !== undefined ? targetUrl : masterSheetUrl;
+    const apiEndpoint = urlToFetch
+      ? `/api/master-sheet?url=${encodeURIComponent(urlToFetch)}`
+      : "/api/master-sheet";
+
+    fetch(apiEndpoint)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load master dataset");
+        const sourceHeader = res.headers.get("x-master-source");
+        return res.text().then((text) => ({ text, sourceHeader }));
+      })
+      .then(({ text, sourceHeader }) => {
         Papa.parse<Row>(text, {
           header: true,
           skipEmptyLines: true,
           complete: (r) => {
             if (r.errors.length) {
-              setUploadError("Could not load sample dataset.");
+              setUploadError("Could not parse master spreadsheet.");
+              setIsSyncing(false);
               return;
             }
             const rows = r.data.filter((x) =>
               Object.values(x).some((v) => String(v).trim())
             );
             setReport(analyze(rows, r.meta.fields || []));
-            setName("gravitas26-sample-testing-data.csv (Official Sample Dataset)");
+            const srcTitle =
+              sourceHeader === "live-google-sheet"
+                ? "Google Master Sheet (Live Real-time Feed)"
+                : "Master Spreadsheet (Automated Live Feed)";
+            setName(srcTitle);
+            setLastSyncTime(
+              new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })
+            );
+            setIsSyncing(false);
           },
         });
       })
       .catch(() => {
-        setUploadError("Failed to fetch sample dataset.");
+        setUploadError("Unable to connect to Master Sheet endpoint.");
+        setIsSyncing(false);
       });
   };
 
   useEffect(() => {
-    loadSampleData();
+    const savedUrl = localStorage.getItem("master_sheet_url") || "";
+    setMasterSheetUrl(savedUrl);
+    setTempUrl(savedUrl);
+    loadMasterData(savedUrl);
+
+    // Automated periodic background synchronization (every 60s)
+    const interval = setInterval(() => {
+      loadMasterData(savedUrl);
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  const handleSaveSheetUrl = () => {
+    const trimmed = tempUrl.trim();
+    localStorage.setItem("master_sheet_url", trimmed);
+    setMasterSheetUrl(trimmed);
+    setIsConfigOpen(false);
+    loadMasterData(trimmed);
+  };
+
+  const handleResetSheetUrl = () => {
+    localStorage.removeItem("master_sheet_url");
+    setMasterSheetUrl("");
+    setTempUrl("");
+    setIsConfigOpen(false);
+    loadMasterData("");
+  };
 
   const external = useMemo(
     () =>
@@ -326,6 +379,13 @@ export default function Dashboard() {
           <p>
             Interactive statistical intelligence dashboard computing metrics directly from authorized event records across 180+ events.
           </p>
+          <div className="sync-badge">
+            <span className="sync-dot" />
+            <span>
+              {isSyncing ? "Syncing..." : "Automated Live Master Feed"}
+              {lastSyncTime && ` · Synced ${lastSyncTime}`}
+            </span>
+          </div>
         </div>
         <div className="uploadgroup">
           <label className="upload" id="upload">
@@ -337,13 +397,26 @@ export default function Dashboard() {
             <span>Upload Custom CSV</span>
             <small>{name}</small>
           </label>
-          <button
-            type="button"
-            className="samplebtn"
-            onClick={loadSampleData}
-          >
-            Load Official Sample Dataset
-          </button>
+          <div className="sync-btn-group">
+            <button
+              type="button"
+              className="samplebtn"
+              onClick={() => loadMasterData()}
+              disabled={isSyncing}
+              style={{ flex: 1 }}
+            >
+              <span className={isSyncing ? "spin-icon" : ""}>↻</span>{" "}
+              {isSyncing ? "Syncing..." : "Sync Master Sheet"}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setIsConfigOpen(true)}
+              title="Configure Master Google Sheet Link"
+            >
+              ⚙ Master Link
+            </button>
+          </div>
           {uploadError && (
             <small className="uploaderror" role="alert">
               {uploadError}
@@ -351,6 +424,66 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {/* Master Sheet Configuration Modal */}
+      {isConfigOpen && (
+        <div className="modal-overlay" onClick={() => setIsConfigOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Automate Master Google Sheet</h3>
+            <p>
+              Connect your Google Sheet so any changes or new rows you add will automatically update this live dashboard.
+            </p>
+
+            <label style={{ display: "grid", gap: "6px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 600 }}>
+                Google Sheet Published CSV URL:
+              </span>
+              <input
+                className="modal-input"
+                placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
+                value={tempUrl}
+                onChange={(e) => setTempUrl(e.target.value)}
+              />
+            </label>
+
+            <div className="modal-guide">
+              <strong>How to get your Google Sheet CSV link:</strong>
+              <ol>
+                <li>Open your Master Google Sheet.</li>
+                <li>Go to <b>File</b> → <b>Share</b> → <b>Publish to web</b>.</li>
+                <li>Select the sheet tab and change format to <b>Comma-separated values (.csv)</b>.</li>
+                <li>Click <b>Publish</b> and paste the copied link above.</li>
+              </ol>
+            </div>
+
+            <div className="modal-footer">
+              {masterSheetUrl && (
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={handleResetSheetUrl}
+                >
+                  Reset to Default
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => setIsConfigOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handleSaveSheetUrl}
+              >
+                Save & Sync Live
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="meta" id="methodology">
         <span>

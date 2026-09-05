@@ -27,6 +27,14 @@ describe("Analytics & Data Engine", () => {
     expect(report.paid.value).toBe(2);
     expect(report.categories.status).toBe("unavailable");
   });
+
+  it("verifies public/master-sheet.csv is present and populated", () => {
+    const masterPath = path.resolve(__dirname, "../public/master-sheet.csv");
+    expect(fs.existsSync(masterPath)).toBe(true);
+    const content = fs.readFileSync(masterPath, "utf-8");
+    const lines = content.trim().split("\n");
+    expect(lines.length).toBeGreaterThan(100);
+  });
 });
 
 describe("Official Team Portraits & Assets Verification", () => {
