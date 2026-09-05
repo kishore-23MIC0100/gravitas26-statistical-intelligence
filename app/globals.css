@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
-:root {
+/* Base / Default Light Theme (Emerald Forest) */
+:root,
+html[data-theme="light"] {
   --forest: #173b24;
   --primary: #41ab5d;
+  --primary-rgb: 65, 171, 93;
   --mint: #c7e9c0;
   --mint-wash: #f0f8ef;
   --wash: #eef8ec;
@@ -12,12 +15,15 @@
   --muted: #627366;
   --line: #d9e9d7;
   --alert: #9c3f28;
+  --card-shadow: 0 4px 12px rgba(23, 59, 36, 0.06);
 }
 
+/* Adaptive System Dark Theme (When user selects system theme & OS is Dark) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]):not([data-theme="dark"]):not([data-theme="obsidian"]):not([data-theme="royal"]) {
     --forest: #102a19;
     --primary: #61c57a;
+    --primary-rgb: 97, 197, 122;
     --mint: #c7e9c0;
     --mint-wash: #152b1b;
     --wash: #1c3722;
@@ -27,7 +33,59 @@
     --muted: #aec4b1;
     --line: #2d4d35;
     --alert: #f2a18c;
+    --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   }
+}
+
+/* Explicit Emerald Dark Theme */
+html[data-theme="dark"] {
+  --forest: #102a19;
+  --primary: #61c57a;
+  --primary-rgb: 97, 197, 122;
+  --mint: #c7e9c0;
+  --mint-wash: #152b1b;
+  --wash: #1c3722;
+  --page: #0d1610;
+  --surface: #152119;
+  --ink: #f2faf2;
+  --muted: #aec4b1;
+  --line: #2d4d35;
+  --alert: #f2a18c;
+  --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* Midnight Obsidian (Cyber Dark Theme) */
+html[data-theme="obsidian"] {
+  --forest: #090e17;
+  --primary: #00d2ff;
+  --primary-rgb: 0, 210, 255;
+  --mint: #80e5ff;
+  --mint-wash: #0f1c2e;
+  --wash: #142236;
+  --page: #060911;
+  --surface: #0d1424;
+  --ink: #e6f1ff;
+  --muted: #8298b3;
+  --line: #1d2d47;
+  --alert: #ff6b6b;
+  --card-shadow: 0 4px 16px rgba(0, 210, 255, 0.08);
+}
+
+/* Royal Indigo (VIT Navy & Classic Blue Theme) */
+html[data-theme="royal"] {
+  --forest: #1a237e;
+  --primary: #3d5afe;
+  --primary-rgb: 61, 90, 254;
+  --mint: #c5cae9;
+  --mint-wash: #e8eaf6;
+  --wash: #edf0fa;
+  --page: #f5f7fc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --muted: #5c6b73;
+  --line: #d1d9e6;
+  --alert: #c62828;
+  --card-shadow: 0 4px 12px rgba(26, 35, 126, 0.08);
 }
 
 * {
@@ -36,6 +94,25 @@
 
 html {
   scroll-behavior: smooth;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body,
+main,
+.panel,
+.metric,
+.top,
+.intro,
+.meta,
+table,
+tr,
+th,
+td,
+.cat-card,
+.status-card,
+.upload,
+.bars {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
 }
 
 body {
@@ -142,9 +219,51 @@ main {
   display: block;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: end;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 3px 4px;
+  gap: 2px;
+}
+
+.theme-btn {
+  background: transparent;
+  border: none;
+  color: var(--mint);
+  padding: 5px 8px;
+  border-radius: 14px;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.theme-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.06);
+}
+
+.theme-btn.active {
+  background: #ffffff;
+  color: #173b24;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
 .menuwrap {
   position: relative;
-  justify-self: end;
 }
 
 .menubutton {

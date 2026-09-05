@@ -143,6 +143,8 @@ function DonutChart({
   );
 }
 
+type ThemeMode = "system" | "light" | "dark" | "obsidian" | "royal";
+
 export default function Dashboard() {
   const [report, setReport] = useState<Report>(blank);
   const [name, setName] = useState("Loading dataset...");
@@ -152,6 +154,23 @@ export default function Dashboard() {
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [theme, setTheme] = useState<ThemeMode>("system");
+
+  // Dynamic Theme Management
+  useEffect(() => {
+    const savedTheme = (localStorage.getItem("gravitas_theme") as ThemeMode) || "system";
+    setTheme(savedTheme);
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "system") {
+      root.removeAttribute("data-theme");
+    } else {
+      root.setAttribute("data-theme", theme);
+    }
+    localStorage.setItem("gravitas_theme", theme);
+  }, [theme]);
 
   const loadSampleData = () => {
     setUploadError("");
@@ -248,6 +267,21 @@ export default function Dashboard() {
     return ["All", ...report.categoryAnalytics.value.map((c) => c.name)];
   }, [report.categoryAnalytics.value]);
 
+  // Dynamic Theme Colors for Donut
+  const donutColors = useMemo(() => {
+    switch (theme) {
+      case "obsidian":
+        return { internal: "#00d2ff", external: "#80e5ff" };
+      case "royal":
+        return { internal: "#1a237e", external: "#3d5afe" };
+      case "dark":
+        return { internal: "#102a19", external: "#61c57a" };
+      case "light":
+      default:
+        return { internal: "#173b24", external: "#41ab5d" };
+    }
+  }, [theme]);
+
   return (
     <main>
       <div
@@ -275,34 +309,85 @@ export default function Dashboard() {
             alt="graVITas’26"
           />
         </div>
-        <div className="menuwrap">
-          <button
-            className="menubutton"
-            type="button"
-            aria-label="Open dashboard navigation"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <i />
-            <i />
-            <i />
-          </button>
-          {menuOpen && (
-            <nav aria-label="Dashboard navigation">
-              <a href="#overview" onClick={closeMenu}>
-                Dashboard
-              </a>
-              <a href="#analytics" onClick={closeMenu}>
-                Visual Analytics
-              </a>
-              <a href="#events" onClick={closeMenu}>
-                Event Directory
-              </a>
-              <a href="#methodology" onClick={closeMenu}>
-                Data Health
-              </a>
-            </nav>
-          )}
+        <div className="header-actions">
+          {/* Dynamic Theme Switcher Toolbar */}
+          <div className="theme-toggle" role="radiogroup" aria-label="Theme selector">
+            <button
+              type="button"
+              className={`theme-btn ${theme === "system" ? "active" : ""}`}
+              onClick={() => setTheme("system")}
+              title="Adaptive Auto (System theme)"
+              aria-label="System Theme"
+            >
+              🌓
+            </button>
+            <button
+              type="button"
+              className={`theme-btn ${theme === "light" ? "active" : ""}`}
+              onClick={() => setTheme("light")}
+              title="Emerald Light Theme"
+              aria-label="Light Theme"
+            >
+              ☀️
+            </button>
+            <button
+              type="button"
+              className={`theme-btn ${theme === "dark" ? "active" : ""}`}
+              onClick={() => setTheme("dark")}
+              title="Emerald Dark Theme"
+              aria-label="Dark Theme"
+            >
+              🌙
+            </button>
+            <button
+              type="button"
+              className={`theme-btn ${theme === "obsidian" ? "active" : ""}`}
+              onClick={() => setTheme("obsidian")}
+              title="Cyber Obsidian Theme"
+              aria-label="Cyber Obsidian Theme"
+            >
+              🌌
+            </button>
+            <button
+              type="button"
+              className={`theme-btn ${theme === "royal" ? "active" : ""}`}
+              onClick={() => setTheme("royal")}
+              title="VIT Royal Navy Theme"
+              aria-label="Royal Navy Theme"
+            >
+              ⚡
+            </button>
+          </div>
+
+          <div className="menuwrap">
+            <button
+              className="menubutton"
+              type="button"
+              aria-label="Open dashboard navigation"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <i />
+              <i />
+              <i />
+            </button>
+            {menuOpen && (
+              <nav aria-label="Dashboard navigation">
+                <a href="#overview" onClick={closeMenu}>
+                  Dashboard
+                </a>
+                <a href="#analytics" onClick={closeMenu}>
+                  Visual Analytics
+                </a>
+                <a href="#events" onClick={closeMenu}>
+                  Event Directory
+                </a>
+                <a href="#methodology" onClick={closeMenu}>
+                  Data Health
+                </a>
+              </nav>
+            )}
+          </div>
         </div>
       </header>
 
@@ -419,12 +504,12 @@ export default function Dashboard() {
                 {
                   label: "Internal (VIT)",
                   value: report.internal.value,
-                  color: "#24693a",
+                  color: donutColors.internal,
                 },
                 {
                   label: "External Institutions",
                   value: report.external.value,
-                  color: "#41ab5d",
+                  color: donutColors.external,
                 },
               ]}
               totalLabel="Registrations"
