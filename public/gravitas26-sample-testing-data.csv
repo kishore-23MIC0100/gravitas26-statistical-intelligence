@@ -1,0 +1,31 @@
+Registration ID,Participant Type,College Name,Event ID,Event Name,Event Category,International Flag,Participant Country,Payment Status,Gender
+G26-001,Internal,Vellore Institute of Technology,EV-101,Code Relay,Technology,No,India,Paid,Female
+G26-002,Internal,Vellore Institute of Technology,EV-101,Code Relay,Technology,No,India,Paid,Male
+G26-003,External,Anna University,EV-101,Code Relay,Technology,No,India,Paid,Female
+G26-004,External,Anna University,EV-101,Code Relay,Technology,No,India,Pending,Male
+G26-005,External,SRM Institute of Science and Technology,EV-101,Code Relay,Technology,No,India,Paid,Female
+G26-006,Internal,Vellore Institute of Technology,EV-101,Code Relay,Technology,No,India,Paid,Non-binary
+G26-007,External,Manipal Institute of Technology,EV-101,Code Relay,Technology,No,India,Paid,Male
+G26-008,Internal,Vellore Institute of Technology,EV-102,Design Sprint,Creative,No,India,Paid,Female
+G26-009,External,Anna University,EV-102,Design Sprint,Creative,No,India,Paid,Female
+G26-010,External,PSG College of Technology,EV-102,Design Sprint,Creative,No,India,Failed,Male
+G26-011,Internal,Vellore Institute of Technology,EV-102,Design Sprint,Creative,No,India,Paid,Female
+G26-012,External,SRM Institute of Science and Technology,EV-102,Design Sprint,Creative,No,India,Paid,Male
+G26-013,Internal,Vellore Institute of Technology,EV-103,Global Policy Forum,Social Impact,Yes,India,Paid,Male
+G26-014,External,National University of Singapore,EV-103,Global Policy Forum,Social Impact,Yes,Singapore,Paid,Female
+G26-015,External,National University of Singapore,EV-103,Global Policy Forum,Social Impact,Yes,Singapore,Paid,Male
+G26-016,External,University of Colombo,EV-103,Global Policy Forum,Social Impact,Yes,Sri Lanka,Paid,Female
+G26-017,Internal,Vellore Institute of Technology,EV-103,Global Policy Forum,Social Impact,Yes,India,Paid,Female
+G26-018,External,University of Colombo,EV-103,Global Policy Forum,Social Impact,Yes,Sri Lanka,Cancelled,Male
+G26-019,Internal,Vellore Institute of Technology,EV-104,Green Innovation Challenge,Sustainability,No,India,Paid,Male
+G26-020,External,PSG College of Technology,EV-104,Green Innovation Challenge,Sustainability,No,India,Paid,Female
+G26-021,External,Manipal Institute of Technology,EV-104,Green Innovation Challenge,Sustainability,No,India,Paid,Male
+G26-022,Internal,Vellore Institute of Technology,EV-104,Green Innovation Challenge,Sustainability,No,India,Refunded,Female
+G26-023,External,Anna University,EV-104,Green Innovation Challenge,Sustainability,No,India,Paid,Male
+G26-024,Internal,Vellore Institute of Technology,EV-105,World Music Assembly,Cultural,Yes,India,Paid,Female
+G26-025,External,University of Melbourne,EV-105,World Music Assembly,Cultural,Yes,Australia,Paid,Female
+G26-026,External,University of Melbourne,EV-105,World Music Assembly,Cultural,Yes,Australia,Paid,Male
+G26-027,External,SRM Institute of Science and Technology,EV-105,World Music Assembly,Cultural,Yes,India,Pending,Female
+G26-028,Internal,Vellore Institute of Technology,EV-106,Robotics Arena,Technology,No,India,Paid,Male
+G26-029,External,Manipal Institute of Technology,EV-106,Robotics Arena,Technology,No,India,Paid,Female
+G26-030,Internal,Vellore Institute of Technology,EV-106,Robotics Arena,Technology,No,India,Paid,Male
