@@ -447,12 +447,22 @@ export default function Dashboard() {
             </label>
 
             <div className="modal-guide">
-              <strong>How to get your Google Sheet CSV link:</strong>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <strong>How to create & connect your Master Google Sheet:</strong>
+                <a
+                  href="/master-sheet.csv"
+                  download="gravitas26-master-sheet.csv"
+                  style={{ color: "var(--forest)", fontWeight: 700, textDecoration: "underline", fontSize: "11px" }}
+                >
+                  Download Sample CSV Template
+                </a>
+              </div>
               <ol>
-                <li>Open your Master Google Sheet.</li>
-                <li>Go to <b>File</b> → <b>Share</b> → <b>Publish to web</b>.</li>
-                <li>Select the sheet tab and change format to <b>Comma-separated values (.csv)</b>.</li>
-                <li>Click <b>Publish</b> and paste the copied link above.</li>
+                <li>Create a new spreadsheet at <b>sheets.google.com</b>.</li>
+                <li>Import the downloaded sample CSV (<b>File → Import → Upload</b>).</li>
+                <li>Go to <b>File → Share → Publish to web</b>.</li>
+                <li>Select the sheet tab, set format to <b>Comma-separated values (.csv)</b>, and click <b>Publish</b>.</li>
+                <li>Paste the copied URL in the field above and click <b>Save & Sync Live</b>.</li>
               </ol>
             </div>
 
