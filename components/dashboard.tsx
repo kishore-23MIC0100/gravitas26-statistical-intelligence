@@ -1,7 +1,14 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
-import { analyze, Report, Row } from "@/lib/analytics";
+import {
+  analyze,
+  Report,
+  Row,
+  CategoryAnalyticsItem,
+  PaymentBreakdownItem,
+  CountryBreakdownItem,
+} from "@/lib/analytics";
 
 const blank = analyze([], []);
 const n = (x: number | null) =>
@@ -29,13 +36,26 @@ function Card({
   );
 }
 
-function Bars({ items }: { items: { name: string; count: number }[] | null }) {
+function Bars({
+  items,
+  activeItem,
+  onSelect,
+}: {
+  items: { name: string; count: number }[] | null;
+  activeItem?: string;
+  onSelect?: (name: string) => void;
+}) {
   if (!items || !items.length) return <Empty />;
   const max = Math.max(...items.map((x) => x.count), 1);
   return (
     <div className="bars">
       {items.map((x) => (
-        <div className="bar" key={x.name}>
+        <div
+          className={`bar ${activeItem === x.name ? "active-bar" : ""}`}
+          key={x.name}
+          onClick={() => onSelect && onSelect(x.name)}
+          style={{ cursor: onSelect ? "pointer" : "default" }}
+        >
           <div>
             <span>{x.name}</span>
             <b>{n(x.count)}</b>
@@ -47,10 +67,89 @@ function Bars({ items }: { items: { name: string; count: number }[] | null }) {
   );
 }
 
+/* Donut Chart Component */
+function DonutChart({
+  data,
+  totalLabel,
+}: {
+  data: { label: string; value: number; color: string }[];
+  totalLabel?: string;
+}) {
+  const total = data.reduce((acc, curr) => acc + curr.value, 0);
+  if (total === 0) return <Empty />;
+
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+  let accumulatedPercent = 0;
+
+  return (
+    <div className="donut-wrap">
+      <div className="donut-chart">
+        <svg viewBox="0 0 120 120">
+          <circle
+            cx="60"
+            cy="60"
+            r={radius}
+            fill="none"
+            stroke="var(--line)"
+            strokeWidth="16"
+          />
+          {data.map((item) => {
+            const percent = item.value / total;
+            const strokeDasharray = `${percent * circumference} ${circumference}`;
+            const strokeDashoffset = -accumulatedPercent * circumference;
+            accumulatedPercent += percent;
+            return (
+              <circle
+                key={item.label}
+                cx="60"
+                cy="60"
+                r={radius}
+                fill="none"
+                stroke={item.color}
+                strokeWidth="16"
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                style={{ transition: "stroke-dasharray 0.5s ease" }}
+              />
+            );
+          })}
+        </svg>
+        <div className="donut-center">
+          <strong>{n(total)}</strong>
+          <small>{totalLabel || "Total"}</small>
+        </div>
+      </div>
+      <div className="donut-legend">
+        {data.map((item) => {
+          const pct = total ? ((item.value / total) * 100).toFixed(1) : "0";
+          return (
+            <div key={item.label} className="legend-item">
+              <span>
+                <i
+                  className="legend-dot"
+                  style={{ background: item.color }}
+                />
+                {item.label}
+              </span>
+              <b>
+                {n(item.value)} <small>({pct}%)</small>
+              </b>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [report, setReport] = useState<Report>(blank);
   const [name, setName] = useState("Loading dataset...");
   const [query, setQuery] = useState("");
+  const [eventSearch, setEventSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [showAllEvents, setShowAllEvents] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
@@ -92,14 +191,31 @@ export default function Dashboard() {
     [report, query]
   );
 
+  const filteredEvents = useMemo(() => {
+    if (!report.ranking.value) return null;
+    let list = report.ranking.value;
+    if (selectedCategory !== "All") {
+      list = list.filter((x) => x.category === selectedCategory);
+    }
+    if (eventSearch.trim()) {
+      const q = eventSearch.toLowerCase();
+      list = list.filter(
+        (x) =>
+          x.name.toLowerCase().includes(q) ||
+          x.category.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [report.ranking.value, selectedCategory, eventSearch]);
+
   const upload = (f: File) => {
     setUploadError("");
     if (!f.name.toLowerCase().endsWith(".csv") || (f.type && f.type !== "text/csv")) {
       setUploadError("Only CSV files are accepted.");
       return;
     }
-    if (f.size > 10 * 1024 * 1024) {
-      setUploadError("File size must be 10 MB or less.");
+    if (f.size > 15 * 1024 * 1024) {
+      setUploadError("File size must be 15 MB or less.");
       return;
     }
     Papa.parse<Row>(f, {
@@ -126,6 +242,11 @@ export default function Dashboard() {
       DRIVEN BY INNOVATION <i /> ANCHORED IN SUSTAINABILITY <i />
     </>
   );
+
+  const categoryList = useMemo(() => {
+    if (!report.categoryAnalytics.value) return [];
+    return ["All", ...report.categoryAnalytics.value.map((c) => c.name)];
+  }, [report.categoryAnalytics.value]);
 
   return (
     <main>
@@ -171,14 +292,14 @@ export default function Dashboard() {
               <a href="#overview" onClick={closeMenu}>
                 Dashboard
               </a>
-              <a href="#upload" onClick={closeMenu}>
-                Data upload
+              <a href="#analytics" onClick={closeMenu}>
+                Visual Analytics
+              </a>
+              <a href="#events" onClick={closeMenu}>
+                Event Directory
               </a>
               <a href="#methodology" onClick={closeMenu}>
-                Methodology
-              </a>
-              <a href="#evidence" onClick={closeMenu}>
-                Evidence
+                Data Health
               </a>
             </nav>
           )}
@@ -199,7 +320,7 @@ export default function Dashboard() {
             ready for the room.
           </h2>
           <p>
-            Statistical dashboard calculating every figure directly from authorized source records across 180+ events.
+            Interactive statistical intelligence dashboard computing metrics directly from authorized event records across 180+ events.
           </p>
         </div>
         <div className="uploadgroup">
@@ -224,13 +345,6 @@ export default function Dashboard() {
               {uploadError}
             </small>
           )}
-          <a
-            className="samplelink"
-            href="/gravitas26-sample-testing-data.csv"
-            download="gravitas26-sample-testing-data.csv"
-          >
-            Download sample testing CSV (187 Events)
-          </a>
         </div>
       </section>
 
@@ -255,6 +369,7 @@ export default function Dashboard() {
         </span>
       </section>
 
+      {/* Primary KPI Metrics */}
       <section className="metrics">
         <Card
           label="Internal count"
@@ -288,26 +403,38 @@ export default function Dashboard() {
         />
       </section>
 
-      <section className="grid">
+      {/* Visual Analytics Grid */}
+      <section className="grid" id="analytics">
+        {/* Visual 1: Participation Donut Chart */}
         <article className="panel">
           <div className="panelhead">
             <div>
-              <p>01 / PARTICIPATION MIX</p>
-              <h3>Internal vs external</h3>
+              <p>01 / PARTICIPATION RADIAL</p>
+              <h3>Internal vs External Mix</h3>
             </div>
           </div>
-          <Bars
-            items={
-              report.internal.value !== null && report.external.value !== null
-                ? [
-                    { name: "Internal (VIT)", count: report.internal.value },
-                    { name: "External", count: report.external.value },
-                  ]
-                : null
-            }
-          />
+          {report.internal.value !== null && report.external.value !== null ? (
+            <DonutChart
+              data={[
+                {
+                  label: "Internal (VIT)",
+                  value: report.internal.value,
+                  color: "#24693a",
+                },
+                {
+                  label: "External Institutions",
+                  value: report.external.value,
+                  color: "#41ab5d",
+                },
+              ]}
+              totalLabel="Registrations"
+            />
+          ) : (
+            <Empty note={report.internal.note} />
+          )}
         </article>
 
+        {/* Visual 2: Highest Registrations Spotlight */}
         <article className="panel feature">
           <p>04 / HIGHEST REGISTRATIONS</p>
           {top ? (
@@ -316,7 +443,9 @@ export default function Dashboard() {
               <strong>
                 {n(top.count)} <small>registrations</small>
               </strong>
-              <span>{top.category}</span>
+              <span>
+                <span className="badge">{top.category}</span>
+              </span>
             </>
           ) : (
             <>
@@ -326,18 +455,54 @@ export default function Dashboard() {
           )}
         </article>
 
+        {/* Visual 3: Payment Conversion & Revenue Waterfall */}
         <article className="panel wide">
           <div className="panelhead">
             <div>
-              <p>02 / EXTERNAL COLLEGES</p>
-              <h3>Institutions represented</h3>
+              <p>06 / PAYMENT SETTLEMENT & CONVERSION</p>
+              <h3>Registration Payment Health</h3>
+            </div>
+          </div>
+          {report.paymentBreakdown.value ? (
+            <div>
+              <div className="progress-meter">
+                {report.paymentBreakdown.value.map((p) => (
+                  <div
+                    key={p.name}
+                    className={`meter-fill fill-${p.statusType}`}
+                    style={{ width: `${p.percent}%` }}
+                    title={`${p.name}: ${p.percent}% (${p.count})`}
+                  />
+                ))}
+              </div>
+              <div className="status-grid">
+                {report.paymentBreakdown.value.map((p) => (
+                  <div key={p.name} className="status-card">
+                    <small>{p.name}</small>
+                    <b>{n(p.count)}</b>
+                    <small>{p.percent}%</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <Empty note={report.paymentBreakdown.note} />
+          )}
+        </article>
+
+        {/* Visual 4: Institutional Reach Search & Table */}
+        <article className="panel wide">
+          <div className="panelhead">
+            <div>
+              <p>02 / EXTERNAL INSTITUTIONS</p>
+              <h3>External Colleges Represented</h3>
             </div>
             <div className="searcharea">
               <label className="searchbox">
                 <span className="searchicon" aria-hidden="true" />
                 <input
                   aria-label="Search external colleges"
-                  placeholder="Search college"
+                  placeholder="Search college name"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
@@ -371,15 +536,52 @@ export default function Dashboard() {
           )}
         </article>
 
-        <article className="panel">
-          <p>03 / EVENT CATEGORIES</p>
-          <h3>Unique events by category</h3>
-          <Bars items={report.categories.value} />
+        {/* Visual 5: Event Category Analytics Grid */}
+        <article className="panel wide">
+          <div className="panelhead">
+            <div>
+              <p>03 / CATEGORY DISTRIBUTION MATRIX</p>
+              <h3>Event Clusters & Volume</h3>
+            </div>
+          </div>
+          {report.categoryAnalytics.value ? (
+            <div className="cat-matrix">
+              {report.categoryAnalytics.value.map((c) => (
+                <div
+                  key={c.name}
+                  className={`cat-card ${selectedCategory === c.name ? "active-card" : ""}`}
+                  onClick={() =>
+                    setSelectedCategory(
+                      selectedCategory === c.name ? "All" : c.name
+                    )
+                  }
+                >
+                  <div className="cat-card-head">
+                    <span>{c.name}</span>
+                    <span className="cat-card-badge">{c.eventsCount} Events</span>
+                  </div>
+                  <div className="cat-card-bar">
+                    <div
+                      className="cat-card-fill"
+                      style={{ width: `${c.share}%` }}
+                    />
+                  </div>
+                  <div className="cat-card-stats">
+                    <span>{n(c.registrations)} registrations</span>
+                    <b>{c.share}%</b>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Empty note={report.categories.note} />
+          )}
         </article>
 
+        {/* Visual 6: Gender Diversity Breakdown */}
         <article className="panel">
-          <p>07 / GENDER DISTRIBUTION</p>
-          <h3>Declared values</h3>
+          <p>07 / GENDER DIVERSITY</p>
+          <h3>Declared Demographic Values</h3>
           {report.genders.value ? (
             <table>
               <thead>
@@ -404,32 +606,109 @@ export default function Dashboard() {
           )}
         </article>
 
-        <article className="panel wide">
-          <p>05 / RANKED EVENTS</p>
-          <h3>Registration ranking (Top 12)</h3>
-          {report.ranking.value ? (
+        {/* Visual 7: Geographic & Country Reach */}
+        <article className="panel">
+          <p>08 / GLOBAL FOOTPRINT</p>
+          <h3>International & Regional Footprint</h3>
+          {report.countryBreakdown.value ? (
             <table>
               <thead>
                 <tr>
-                  <th>Rank</th>
-                  <th>Event</th>
-                  <th>Category</th>
-                  <th>Registrations</th>
+                  <th>Country / Territory</th>
+                  <th>Participants</th>
+                  <th>Share</th>
                 </tr>
               </thead>
               <tbody>
-                {report.ranking.value.slice(0, 12).map((x, i) => (
+                {report.countryBreakdown.value.slice(0, 6).map((x) => (
                   <tr key={x.name}>
-                    <td>{String(i + 1).padStart(2, "0")}</td>
                     <td>{x.name}</td>
-                    <td>{x.category}</td>
                     <td>{n(x.count)}</td>
+                    <td>{x.percent}%</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <Empty note={report.ranking.note} />
+            <Empty note={report.countryBreakdown.note} />
+          )}
+        </article>
+
+        {/* Visual 8: Interactive Ranked Event Directory */}
+        <article className="panel wide" id="events">
+          <div className="panelhead">
+            <div>
+              <p>05 / EVENT LEADERBOARD & DIRECTORY</p>
+              <h3>Registration Ranking ({filteredEvents ? filteredEvents.length : 0} Events)</h3>
+            </div>
+            <div className="searcharea">
+              <label className="searchbox">
+                <span className="searchicon" aria-hidden="true" />
+                <input
+                  aria-label="Search events"
+                  placeholder="Filter by event name"
+                  value={eventSearch}
+                  onChange={(e) => setEventSearch(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Category Chips Filter */}
+          <div className="chip-group">
+            {categoryList.map((catName) => (
+              <button
+                key={catName}
+                type="button"
+                className={`chip ${selectedCategory === catName ? "active" : ""}`}
+                onClick={() => setSelectedCategory(catName)}
+              >
+                {catName}
+              </button>
+            ))}
+          </div>
+
+          {filteredEvents && filteredEvents.length > 0 ? (
+            <>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Event</th>
+                    <th>Category</th>
+                    <th>Registrations</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(showAllEvents
+                    ? filteredEvents
+                    : filteredEvents.slice(0, 12)
+                  ).map((x, i) => (
+                    <tr key={x.name}>
+                      <td>{String(i + 1).padStart(2, "0")}</td>
+                      <td>{x.name}</td>
+                      <td>
+                        <span className="badge">{x.category}</span>
+                      </td>
+                      <td>{n(x.count)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredEvents.length > 12 && (
+                <button
+                  type="button"
+                  className="expand-btn"
+                  onClick={() => setShowAllEvents(!showAllEvents)}
+                >
+                  {showAllEvents
+                    ? "▲ Show Top 12 Events Only"
+                    : `▼ View All ${filteredEvents.length} Events in this category`}
+                </button>
+              )}
+            </>
+          ) : (
+            <Empty note="No events matched the current search or category filter." />
           )}
         </article>
       </section>

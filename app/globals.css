@@ -623,6 +623,248 @@ footer span {
   color: var(--muted);
 }
 
+/* Advanced Visualizations */
+.donut-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+}
+
+.donut-chart {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.donut-chart svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-center strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--forest);
+  line-height: 1.1;
+}
+
+.donut-center small {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  gap: 12px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Category Filter Chips */
+.chip-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 12px 0 16px;
+}
+
+.chip {
+  background: var(--wash);
+  color: var(--forest);
+  border: 1px solid var(--line);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  background: var(--mint);
+  border-color: var(--primary);
+}
+
+.chip.active {
+  background: var(--forest);
+  color: #fff;
+  border-color: var(--forest);
+}
+
+/* Payment & Funnel Meter */
+.progress-meter {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--line);
+  display: flex;
+  overflow: hidden;
+  margin: 14px 0 10px;
+}
+
+.meter-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.fill-success { background: #38a169; }
+.fill-warning { background: #ecc94b; }
+.fill-danger  { background: #e53e3e; }
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.status-card {
+  background: var(--wash);
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.status-card small {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+.status-card b {
+  font-size: 15px;
+  color: var(--ink);
+}
+
+/* Category Matrix Cards */
+.cat-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cat-card {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cat-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(65, 171, 93, 0.12);
+  transform: translateY(-2px);
+}
+
+.cat-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--forest);
+}
+
+.cat-card-badge {
+  background: var(--mint-wash);
+  color: var(--forest);
+  border: 1px solid var(--line);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.cat-card-bar {
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cat-card-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.cat-card-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Badges and Tags */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--wash);
+  color: var(--forest);
+  border: 1px solid var(--line);
+}
+
+.expand-btn {
+  width: 100%;
+  background: var(--wash);
+  border: 1px dashed var(--primary);
+  color: var(--forest);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s ease;
+}
+
+.expand-btn:hover {
+  background: var(--mint);
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 900px) {
   main {
