@@ -811,6 +811,15 @@ export default function Dashboard() {
           <b>Confidential view</b>
           <span>For authorized event officials and spokespersons</span>
         </div>
+        <div className="copyright-bar">
+          <p>
+            © {new Date().getFullYear()} Vellore Institute of Technology (VIT). All rights reserved. graVITas’26 — Driven by Innovation, Anchored in Sustainability.
+          </p>
+          <div className="copyright-links">
+            <span>Authorized Press & Media View</span>
+            <span>VIT Vellore Campus</span>
+          </div>
+        </div>
       </footer>
     </main>
   );

@@ -742,6 +742,42 @@ footer span {
   color: var(--muted);
 }
 
+.copyright-bar {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 16px;
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.copyright-bar p {
+  margin: 0;
+  font-size: 11px;
+}
+
+.copyright-links {
+  display: flex;
+  gap: 16px;
+}
+
+.copyright-links span,
+.copyright-links a {
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.copyright-links a:hover {
+  color: var(--primary);
+}
+
 /* Advanced Visualizations */
 .donut-wrap {
   display: flex;
